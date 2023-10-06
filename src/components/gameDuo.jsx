@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { randomDir } from "./functions/randomdir";
 import { board } from "./functions/boardRender";
+import { playerFirst, playerSecond } from "./functions/players";
 
 export const GameBoardForDuo = () => {
   if (!localStorage.getItem("settings")) {
@@ -60,8 +61,8 @@ export const GameBoardForDuo = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       board(canvas, ctx);
-      playerFirst();
-      playerSecond();
+      playerFirst(moveUpLeft, speed, moveDownLeft, leftPaddle, canvas, ctx);
+      playerSecond(moveUpRight, speed, moveDownRight, rightPaddle, canvas, ctx);
       win();
       controlPlayers();
       ball();
@@ -78,7 +79,7 @@ export const GameBoardForDuo = () => {
       if (ballStats.x > rightPaddle.x + 50) {
         count.left += 1;
 
-        const countLeft = document.getElementById("countRight");
+        const countLeft = document.getElementById("countLeft");
         if (countLeft) {
           countLeft.textContent = count.left;
         }
@@ -156,56 +157,6 @@ export const GameBoardForDuo = () => {
       ctx.beginPath();
       ctx.arc(ballStats.x, ballStats.y, ballStats.radius, 0, 2 * Math.PI);
       ctx.fill();
-    }
-
-    // обработать перемещение первого объекта
-    function playerFirst() {
-      let dy = 0;
-      if (moveUpLeft) {
-        dy = -speed;
-      }
-      if (moveDownLeft) {
-        dy = speed;
-      }
-
-      leftPaddle.y += dy;
-
-      if (leftPaddle.y < 0 || leftPaddle.y > canvas.height - 100) {
-        leftPaddle.y -= dy;
-      }
-
-      ctx.fillStyle = "white";
-      ctx.fillRect(
-        leftPaddle.x,
-        leftPaddle.y,
-        leftPaddle.width,
-        leftPaddle.height
-      );
-    }
-
-    // обработать перемещение второго объекта
-    function playerSecond() {
-      let dy = 0;
-      if (moveUpRight) {
-        dy = -speed;
-      }
-      if (moveDownRight) {
-        dy = speed;
-      }
-
-      rightPaddle.y += dy;
-
-      if (rightPaddle.y < 0 || rightPaddle.y > canvas.height - 100) {
-        rightPaddle.y -= dy;
-      }
-
-      ctx.fillStyle = "white";
-      ctx.fillRect(
-        rightPaddle.x,
-        rightPaddle.y,
-        rightPaddle.width,
-        rightPaddle.height
-      );
     }
 
     // управление

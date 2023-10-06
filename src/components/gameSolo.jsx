@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { randomDir } from "./functions/randomdir";
 import { board } from "./functions/boardRender";
+import { botPlay, playerFirst } from "./functions/players";
 
 export const GameBoardForSolo = () => {
   if (!localStorage.getItem("settings")) {
@@ -12,6 +13,9 @@ export const GameBoardForSolo = () => {
   }
   const settings = JSON.parse(localStorage.getItem("settings"));
 
+  const keysUp = ["w", "ц", "W", "Ц"];
+  const keysDown = ["S", "s", "ы", "Ы"];
+
   const count = { left: 0, right: 0 };
 
   useEffect(() => {
@@ -21,11 +25,8 @@ export const GameBoardForSolo = () => {
     let speed = settings.paddleSpeed;
     let ballSpeed = settings.minBallSpeed;
 
-    const keysUp = ["w", "ц", "W", "Ц"];
-    const keysDown = ["S", "s", "ы", "Ы"];
-
-    let moveUp1 = false;
-    let moveDown1 = false;
+    let moveDown = false;
+    let moveUp = false;
 
     let leftPaddle = {
       x: 175,
@@ -57,13 +58,14 @@ export const GameBoardForSolo = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       board(canvas, ctx);
-      playerFirst();
-      playerSecond();
+      playerFirst(moveUp, speed, moveDown, leftPaddle, canvas, ctx);
+      botPlay(rightPaddle, ballStats, canvas, ctx, speed);
       win();
       controlPlayers();
       ball();
       if (
-        window.location.pathname.split("/").filter((i) => i != "")[0] != "game"
+        window.location.pathname.split("/").filter((i) => i !== "")[0] !==
+        "game"
       ) {
         return;
       }
@@ -75,7 +77,7 @@ export const GameBoardForSolo = () => {
       if (ballStats.x > rightPaddle.x + 50) {
         count.left += 1;
 
-        const countLeft = document.getElementById("countRight");
+        const countLeft = document.getElementById("countLeft");
         if (countLeft) {
           countLeft.textContent = count.left;
         }
@@ -127,7 +129,7 @@ export const GameBoardForSolo = () => {
           ballStats.x = leftPaddle.x + leftPaddle.width + ballStats.radius;
           ballDx *= -1;
 
-          if (ballDx != settings.maxBallSpeed) {
+          if (ballDx !== settings.maxBallSpeed) {
             ballDx += 1;
             ballDy += 1;
           }
@@ -141,7 +143,7 @@ export const GameBoardForSolo = () => {
           ballStats.x = rightPaddle.x - ballStats.radius;
           ballDx *= -1;
 
-          if (ballDx != -settings.maxBallSpeed) {
+          if (ballDx !== -settings.maxBallSpeed) {
             ballDx -= 1;
             ballDy -= 1;
           }
@@ -154,73 +156,23 @@ export const GameBoardForSolo = () => {
       ctx.fill();
     }
 
-    // обработать перемещение первого объекта
-    function playerFirst() {
-      let dy = 0;
-      if (moveUp1) {
-        dy = -speed;
-      }
-      if (moveDown1) {
-        dy = speed;
-      }
-
-      leftPaddle.y += dy;
-
-      if (leftPaddle.y < 0 || leftPaddle.y > canvas.height - 100) {
-        leftPaddle.y -= dy;
-      }
-
-      ctx.fillStyle = "white";
-      ctx.fillRect(
-        leftPaddle.x,
-        leftPaddle.y,
-        leftPaddle.width,
-        leftPaddle.height
-      );
-    }
-
-    // обработать перемещение второго объекта
-    function playerSecond() {
-      if (rightPaddle.y + rightPaddle.width + 45 <= ballStats.y + 20) {
-        rightPaddle.y += speed;
-      }
-      if (rightPaddle.y + rightPaddle.width + 45 >= ballStats.y + 20) {
-        rightPaddle.y -= speed;
-      }
-
-      if (rightPaddle.y < 0) {
-        rightPaddle.y += speed;
-      }
-      if (rightPaddle.y > canvas.height - 100) {
-        rightPaddle.y -= speed;
-      }
-
-      ctx.fillStyle = "white";
-      ctx.fillRect(
-        rightPaddle.x,
-        rightPaddle.y,
-        rightPaddle.width,
-        rightPaddle.height
-      );
-    }
-
     // управление
     function controlPlayers() {
       document.addEventListener("keydown", function (event) {
         if (keysUp.includes(event.key)) {
-          moveUp1 = true;
+          moveUp = true;
         }
         if (keysDown.includes(event.key)) {
-          moveDown1 = true;
+          moveDown = true;
         }
       });
 
       document.addEventListener("keyup", function (event) {
         if (keysUp.includes(event.key)) {
-          moveUp1 = false;
+          moveUp = false;
         }
         if (keysDown.includes(event.key)) {
-          moveDown1 = false;
+          moveDown = false;
         }
       });
     }
